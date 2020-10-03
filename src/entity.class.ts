@@ -1,23 +1,39 @@
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { IdSelector } from './id-selector.class';
 
-interface EntityObjContainer<F> {
+type EntityKey = string | number;
+interface EntityObjContainerNumber<F> {
+  [key: number]: F;
+}
+interface EntityObjContainerString<F> {
   [key: string]: F;
 }
-interface EntityOptions {
-  key?: string;
+type EntityObjContainer<F> = EntityObjContainerString<F>;
+interface EntityOptions<T> {
+  key?: IdSelector<T>;
   name?: string;
   plural?: string;
 }
+interface EntityUpdate<F> {
+  id: string;
+  item: Partial<F>;
+}
+interface EntityAdd<F> {
+  id: string;
+  item: F;
+}
 export class EntityClass<F> {
-  private data: BehaviorSubject<EntityObjContainer<F>> = new BehaviorSubject({});
-  private items: BehaviorSubject<string[]> = new BehaviorSubject([]);
-  private activeId: BehaviorSubject<string> = new BehaviorSubject(undefined);
+  private data: BehaviorSubject<EntityObjContainer<F>> = new BehaviorSubject<EntityObjContainer<F>>(
+    {}
+  );
+  private items: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
+  private activeId: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   public data$ = this.data.asObservable();
   public items$ = this.items.asObservable().pipe(
     map(items =>
-      items.reduce((prev, curr) => {
+      items.reduce((prev: F[], curr: string) => {
         return [...prev, this.data.value[curr]];
       }, [])
     )
@@ -25,22 +41,22 @@ export class EntityClass<F> {
   public activeId$ = this.activeId.asObservable();
 
   /**
+   * Proper names used for action calls. Defaults to Item/Items if not set with options
+   *
+   * @memberof EntityClass
+   */
+  entityName = '';
+  entityNamePlural = '';
+
+  /**
    * This is what is used as the key for the data object. This can be changed by passing a new value in the options parameter
    * '_id' is the default value
    *
    * @memberof EntityClass
    */
-  key = '_id';
+  public idSelector!: IdSelector<F>;
 
-  /**
-   * Proper names used for action calls. Defaults to Item/Items if not set with options
-   *
-   * @memberof EntityClass
-   */
-  entityName;
-  entityNamePlural;
-
-  constructor(options: EntityOptions = {}) {
+  constructor(options: EntityOptions<F> = {}) {
     this.setOptions(options);
     this.setNames(options);
   }
@@ -52,12 +68,11 @@ export class EntityClass<F> {
    * @param {EntityOptions} options
    * @memberof EntityClass
    */
-  private setOptions(options: EntityOptions = {}) {
-    const keys = Object.keys(options);
-    keys.forEach(key => (this[key] = options[key]));
+  private setOptions(options: EntityOptions<F> = {}) {
+    this.idSelector = options.key || ((instance: any) => instance.id);
   }
 
-  private setNames(options: EntityOptions = {}) {
+  private setNames(options: EntityOptions<F> = {}) {
     this.entityName = options.name || 'Item';
     this.entityNamePlural = options.plural || `${this.entityName}s`;
   }
@@ -86,13 +101,13 @@ export class EntityClass<F> {
    */
   getOne(id: string): Observable<F> {
     return this.data$.pipe(
-      map(data => data[id]),
-      map(data => (data ? { ...data } : undefined))
+      map(data => data[id])
+      // map(data => (data ? { ...data } : undefined))
     );
   }
   getMany(ids: string[]): Observable<F[]> {
     return this.data$.pipe(
-      map(data => ids.reduce((curr, id) => [...curr, data[id]], [])),
+      map(data => ids.reduce((curr: F[], id: string) => [...curr, data[id]], [])),
       map(data => [...data])
     );
   }
@@ -103,7 +118,7 @@ export class EntityClass<F> {
    * @param {F} item
    * @memberof EntityClass
    */
-  addOne(item: F) {
+  addOne(item: EntityAdd<F>) {
     this.addMany([item]);
   }
 
@@ -113,16 +128,15 @@ export class EntityClass<F> {
    * @param {F[]} arr
    * @memberof EntityClass
    */
-  addMany(arr: F[]) {
+  addMany(arr: EntityAdd<F>[]) {
     const data = this.snapshot.data;
     let items = this.snapshot.items;
-    arr.forEach(item => {
-      const keyValue = item[this.key];
-      data[keyValue] = item;
-      const existsInArray = items.includes(keyValue);
+    arr.forEach(({ id, item }) => {
+      data[id] = item;
+      const existsInArray = items.includes(id);
       if (!existsInArray) {
-        items = items.filter(v => v !== keyValue);
-        items.push(keyValue);
+        items = items.filter(v => v !== id);
+        items.push(id);
       }
     });
 
@@ -136,7 +150,7 @@ export class EntityClass<F> {
    * @param {Partial<F>} item
    * @memberof EntityClass
    */
-  updateOne(item: Partial<F>) {
+  updateOne(item: EntityUpdate<F>) {
     this.updateMany([item]);
   }
 
@@ -146,10 +160,10 @@ export class EntityClass<F> {
    * @param {Partial<F>[]} arr
    * @memberof EntityClass
    */
-  updateMany(arr: Partial<F>[]) {
+  updateMany(arr: EntityUpdate<F>[]) {
     const data = this.snapshot.data;
-    arr.forEach(item => {
-      data[item[this.key]] = { ...data[item[this.key]], ...item };
+    arr.forEach(({ id, item }) => {
+      data[id] = { ...data[id], ...item };
     });
     this.data.next(data);
   }
@@ -160,7 +174,7 @@ export class EntityClass<F> {
    * @param {*} id
    * @memberof EntityClass
    */
-  removeOne(id) {
+  removeOne(id: string) {
     this.removeMany([id]);
   }
 
@@ -188,7 +202,7 @@ export class EntityClass<F> {
   getActive(): Observable<F> {
     return combineLatest([this.data$, this.activeId$]).pipe(
       map(([data, id]) => {
-        return data[id] ? { ...data[id] } : null;
+        return { ...data[id] };
       })
     );
   }

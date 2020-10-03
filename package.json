@@ -4,11 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^13.11.1",
+    "codelyzer": "^6.0.1",
+    "gts": "^2.0.2",
     "tslint": "^6.1.3",
     "tslint-config-airbnb": "^5.11.2",
     "typescript": "^4.0.3"
