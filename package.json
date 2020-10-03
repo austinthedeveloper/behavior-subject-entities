@@ -1,10 +1,10 @@
 {
   "name": "behavior-subject-entities",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/index.ts",
+  "description": "A helper class for dealing with BehaviorSubjects",
+  "main": "dist/src/index.js",
   "files": [
-    "dist/**/*"
+    "dist/src/**/*"
   ],
   "scripts": {
     "test": "jest",
