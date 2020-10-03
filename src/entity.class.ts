@@ -2,38 +2,34 @@ import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IdSelector } from './id-selector.class';
 
-interface EntityObjContainerString<F> {
-  [key: string]: F;
+interface EntityObjContainerString<T> {
+  [key: string]: T;
 }
-type EntityObjContainer<F> = EntityObjContainerString<F>;
+type EntityObjContainer<T> = EntityObjContainerString<T>;
 interface EntityOptions<T> {
   key?: IdSelector<T>;
   name?: string;
   plural?: string;
 }
-interface EntityUpdate<F> {
+interface EntityUpdate<T> {
   id: string;
-  item: Partial<F>;
+  item: Partial<T>;
 }
-interface EntityAdd<F> {
+interface EntityAdd<T> {
   id: string;
-  item: F;
+  item: T;
 }
 
-export class EntityClass<F> {
-  private data: BehaviorSubject<EntityObjContainer<F>> = new BehaviorSubject<EntityObjContainer<F>>(
+export class EntityClass<T> {
+  private data: BehaviorSubject<EntityObjContainer<T>> = new BehaviorSubject<EntityObjContainer<T>>(
     {}
   );
   private items: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
   private activeId: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   public data$ = this.data.asObservable();
-  public items$ = this.items.asObservable().pipe(
-    map(items =>
-      items.reduce((prev: F[], curr: string) => {
-        return [...prev, this.data.value[curr]];
-      }, [])
-    )
+  public items$ = combineLatest([this.items.asObservable(), this.data$]).pipe(
+    map(([ids, data]) => this.reduceIds(ids, data))
   );
   public activeId$ = this.activeId.asObservable();
 
@@ -51,9 +47,9 @@ export class EntityClass<F> {
    *
    * @memberof EntityClass
    */
-  public idSelector!: IdSelector<F>;
+  public idSelector!: IdSelector<T>;
 
-  constructor(options: EntityOptions<F> = {}) {
+  constructor(options: EntityOptions<T> = {}) {
     this.setOptions(options);
     this.setNames(options);
   }
@@ -65,11 +61,11 @@ export class EntityClass<F> {
    * @param {EntityOptions} options
    * @memberof EntityClass
    */
-  private setOptions(options: EntityOptions<F> = {}) {
+  private setOptions(options: EntityOptions<T> = {}) {
     this.idSelector = options.key || ((instance: any) => instance.id);
   }
 
-  private setNames(options: EntityOptions<F> = {}) {
+  private setNames(options: EntityOptions<T> = {}) {
     this.entityName = options.name || 'Item';
     this.entityNamePlural = options.plural || `${this.entityName}s`;
   }
@@ -78,10 +74,10 @@ export class EntityClass<F> {
    * Get a snapshot of the stored values
    *
    * @readonly
-   * @type {{ data: EntityObjContainer<F>; items: string[] }}
+   * @type {{ data: EntityObjContainer<T>; items: string[] }}
    * @memberof EntityClass
    */
-  get snapshot(): { data: EntityObjContainer<F>; items: string[]; activeId: string } {
+  get snapshot(): { data: EntityObjContainer<T>; items: string[]; activeId: string } {
     return {
       data: this.data.value,
       items: this.items.value,
@@ -93,10 +89,10 @@ export class EntityClass<F> {
    * Returns a single Entry as an Observable
    *
    * @param {string} id
-   * @return {*}  {Observable<F>}
+   * @return {*}  {Observable<T>}
    * @memberof EntityClass
    */
-  getOne(id: string): Observable<F> {
+  getOne(id: string): Observable<T> {
     return this.data$.pipe(
       map(data => data[id])
       // map(data => (data ? { ...data } : undefined))
@@ -106,33 +102,34 @@ export class EntityClass<F> {
    * Returns multiple Entries as an Observable
    *
    * @param {string[]} ids
-   * @return {*}  {Observable<F[]>}
+   * @return {*}  {Observable<T[]>}
    * @memberof EntityClass
    */
-  getMany(ids: string[]): Observable<F[]> {
-    return this.data$.pipe(
-      map(data => ids.reduce((curr: F[], id: string) => [...curr, data[id]], [])),
-      map(data => [...data])
-    );
+  getMany(ids: string[]): Observable<T[]> {
+    return this.data$.pipe(map(data => this.reduceIds(ids, data)));
+  }
+
+  reduceIds(ids: string[], data: EntityObjContainer<T>): T[] {
+    return ids.reduce((curr: T[], id: string) => [...curr, data[id]], []);
   }
 
   /**
    * Add a single Entry
    *
-   * @param {F} item
+   * @param {T} item
    * @memberof EntityClass
    */
-  addOne(item: EntityAdd<F>) {
+  addOne(item: EntityAdd<T>) {
     this.addMany([item]);
   }
 
   /**
    * Add more than one Entry
    *
-   * @param {F[]} arr
+   * @param {T[]} arr
    * @memberof EntityClass
    */
-  addMany(arr: EntityAdd<F>[]) {
+  addMany(arr: EntityAdd<T>[]) {
     const data = this.snapshot.data;
     let items = this.snapshot.items;
     arr.forEach(({ id, item }) => {
@@ -151,20 +148,20 @@ export class EntityClass<F> {
   /**
    * Update one Entry
    *
-   * @param {Partial<F>} item
+   * @param {Partial<T>} item
    * @memberof EntityClass
    */
-  updateOne(item: EntityUpdate<F>) {
+  updateOne(item: EntityUpdate<T>) {
     this.updateMany([item]);
   }
 
   /**
    * Update more than one Entry
    *
-   * @param {Partial<F>[]} arr
+   * @param {Partial<T>[]} arr
    * @memberof EntityClass
    */
-  updateMany(arr: EntityUpdate<F>[]) {
+  updateMany(arr: EntityUpdate<T>[]) {
     const data = this.snapshot.data;
     arr.forEach(({ id, item }) => {
       data[id] = { ...data[id], ...item };
@@ -214,10 +211,10 @@ export class EntityClass<F> {
    * Get the full object when an ActiveId has been set
    * Returns undefined if it can't find it in the BehaviorSubject
    *
-   * @return {*}  {(Observable<F | null>)}
+   * @return {*}  {(Observable<T | null>)}
    * @memberof EntityClass
    */
-  getActive(): Observable<F | null> {
+  getActive(): Observable<T | null> {
     return combineLatest([this.data$, this.activeId$]).pipe(map(([data, id]) => data[id]));
   }
 
