@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "./src",
     "outDir": "./dist",
     "sourceMap": true,
     "declaration": false,
