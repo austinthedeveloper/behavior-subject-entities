@@ -2,10 +2,6 @@ import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IdSelector } from './id-selector.class';
 
-type EntityKey = string | number;
-interface EntityObjContainerNumber<F> {
-  [key: number]: F;
-}
 interface EntityObjContainerString<F> {
   [key: string]: F;
 }
@@ -23,6 +19,7 @@ interface EntityAdd<F> {
   id: string;
   item: F;
 }
+
 export class EntityClass<F> {
   private data: BehaviorSubject<EntityObjContainer<F>> = new BehaviorSubject<EntityObjContainer<F>>(
     {}
@@ -105,6 +102,13 @@ export class EntityClass<F> {
       // map(data => (data ? { ...data } : undefined))
     );
   }
+  /**
+   * Returns multiple Entries as an Observable
+   *
+   * @param {string[]} ids
+   * @return {*}  {Observable<F[]>}
+   * @memberof EntityClass
+   */
   getMany(ids: string[]): Observable<F[]> {
     return this.data$.pipe(
       map(data => ids.reduce((curr: F[], id: string) => [...curr, data[id]], [])),
@@ -123,7 +127,7 @@ export class EntityClass<F> {
   }
 
   /**
-   * Add more than one entry
+   * Add more than one Entry
    *
    * @param {F[]} arr
    * @memberof EntityClass
@@ -145,7 +149,7 @@ export class EntityClass<F> {
   }
 
   /**
-   * Update one entry
+   * Update one Entry
    *
    * @param {Partial<F>} item
    * @memberof EntityClass
@@ -155,7 +159,7 @@ export class EntityClass<F> {
   }
 
   /**
-   * Update more than one entry
+   * Update more than one Entry
    *
    * @param {Partial<F>[]} arr
    * @memberof EntityClass
@@ -169,7 +173,7 @@ export class EntityClass<F> {
   }
 
   /**
-   * Remove one entry
+   * Remove one Entry
    *
    * @param {*} id
    * @memberof EntityClass
@@ -179,7 +183,7 @@ export class EntityClass<F> {
   }
 
   /**
-   * Remove more than one entry
+   * Remove more than one Entry
    *
    * @param {string[]} ids
    * @memberof EntityClass
@@ -195,14 +199,36 @@ export class EntityClass<F> {
     this.items.next(items);
   }
 
+  /**
+   * Set an Active Entry in the service.
+   * Useful alternative to getOne()
+   *
+   * @param {string} id
+   * @memberof EntityClass
+   */
   setActiveId(id: string) {
     this.activeId.next(id);
   }
 
+  /**
+   * Get the full object when an ActiveId has been set
+   * Returns undefined if it can't find it in the BehaviorSubject
+   *
+   * @return {*}  {(Observable<F | null>)}
+   * @memberof EntityClass
+   */
   getActive(): Observable<F | null> {
     return combineLatest([this.data$, this.activeId$]).pipe(map(([data, id]) => data[id]));
   }
 
+  /**
+   * Returns true if the Entry exists in the BehaviorSubject
+   * Returns false if the Entry does not exist
+   *
+   * @param {string} id
+   * @return {*}  {boolean}
+   * @memberof EntityClass
+   */
   exists(id: string): boolean {
     return this.snapshot.items.includes(id);
   }
