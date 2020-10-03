@@ -1,12 +1,12 @@
 import { EntityClass } from '../src/entity.class';
 
-interface mockInterface {
+interface MockInterface {
   id: string;
   name: string;
 }
 
-function getClass(): EntityClass<mockInterface> {
-  return new EntityClass<mockInterface>();
+function getClass(): EntityClass<MockInterface> {
+  return new EntityClass<MockInterface>();
 }
 
 describe('Entity Class', () => {
@@ -29,7 +29,7 @@ describe('Entity Class', () => {
     });
   });
   describe('Adding Items', () => {
-    let entity: EntityClass<mockInterface>;
+    let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
       entity.addOne({ id: '1', item: { id: '1', name: 'testing' } });
@@ -68,7 +68,7 @@ describe('Entity Class', () => {
     });
   });
   describe('Reading Items', () => {
-    let entity: EntityClass<mockInterface>;
+    let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
       entity.addOne({ id: '1', item: { id: '1', name: 'Name 1' } });
@@ -92,10 +92,151 @@ describe('Entity Class', () => {
       });
     });
   });
+  describe('Updating Items', () => {
+    let entity: EntityClass<MockInterface>;
+    beforeEach(() => {
+      entity = getClass();
+      entity.addMany([
+        { id: '1', item: { id: '1', name: 'Name 1' } },
+        { id: '2', item: { id: '2', name: 'Name 2' } },
+        { id: '3', item: { id: '3', name: 'Name 3' } },
+      ]);
+    });
+
+    it('should update one item', done => {
+      entity.updateOne({ id: '1', item: { id: '1', name: 'Test' } });
+      entity.getOne('1').subscribe(item => {
+        expect(item.name).toEqual('Test');
+        done();
+      });
+    });
+    it('should update many items', done => {
+      entity.updateMany([
+        { id: '1', item: { id: '1', name: 'Test' } },
+        { id: '2', item: { id: '2', name: 'Test' } },
+        { id: '3', item: { id: '3', name: 'Test' } },
+      ]);
+      entity.getMany(['1', '2', '3']).subscribe(items => {
+        items.forEach(item => {
+          expect(item.name).toEqual('Test');
+        });
+        done();
+      });
+    });
+  });
+  describe('Removing Items', () => {
+    let entity: EntityClass<MockInterface>;
+    beforeEach(() => {
+      entity = getClass();
+      entity.addMany([
+        { id: '1', item: { id: '1', name: 'Name 1' } },
+        { id: '2', item: { id: '2', name: 'Name 2' } },
+        { id: '3', item: { id: '3', name: 'Name 3' } },
+      ]);
+    });
+
+    it('should remove one item', done => {
+      entity.removeOne('1');
+      entity.items$.subscribe(items => {
+        expect(items.length).toEqual(2);
+        done();
+      });
+    });
+    it('should remove many items', done => {
+      entity.removeMany(['1', '2']);
+      entity.items$.subscribe(items => {
+        expect(items.length).toEqual(1);
+        done();
+      });
+    });
+  });
+  describe('Active Item', () => {
+    let entity: EntityClass<MockInterface>;
+    beforeEach(() => {
+      entity = getClass();
+      entity.addMany([
+        { id: '1', item: { id: '1', name: 'Name 1' } },
+        { id: '2', item: { id: '2', name: 'Name 2' } },
+        { id: '3', item: { id: '3', name: 'Name 3' } },
+      ]);
+    });
+    describe('Init', () => {
+      it('should not start with an active id', done => {
+        entity.activeId$.subscribe(id => {
+          expect(id).toBeFalsy();
+          done();
+        });
+      });
+      it('should not start with an active item', done => {
+        entity.getActive().subscribe(item => {
+          expect(item).toBeFalsy();
+          done();
+        });
+      });
+    });
+
+    describe('Setting a value', () => {
+      beforeEach(() => {
+        entity.setActiveId('1');
+      });
+
+      it('should return the active Id', done => {
+        entity.activeId$.subscribe(id => {
+          expect(id).toEqual('1');
+          done();
+        });
+      });
+
+      it('should return the active object', done => {
+        entity.getActive().subscribe(item => {
+          expect(item).toBeTruthy();
+          done();
+        });
+      });
+    });
+  });
+
+  describe('Exists', () => {
+    let entity: EntityClass<MockInterface>;
+    beforeEach(() => {
+      entity = getClass();
+      entity.addMany([
+        { id: '1', item: { id: '1', name: 'Name 1' } },
+        { id: '2', item: { id: '2', name: 'Name 2' } },
+        { id: '3', item: { id: '3', name: 'Name 3' } },
+      ]);
+    });
+    it('should return true when the item exists', () => {
+      expect(entity.exists('1')).toBeTruthy();
+      expect(entity.exists('2')).toBeTruthy();
+      expect(entity.exists('3')).toBeTruthy();
+    });
+    it('should return false when the item does not exist', () => {
+      expect(entity.exists('5')).toBeFalsy();
+    });
+  });
   describe('Snapshot', () => {
-    it('should return a snapshot', () => {
+    it('should return a snapshot with no values', () => {
       const entity = getClass();
       expect(entity.snapshot).toBeDefined();
+      expect(entity.snapshot.activeId).toBeFalsy();
+      expect(entity.snapshot.data).toEqual({});
+      expect(entity.snapshot.items.length).toBeFalsy();
+    });
+    it('should return a snapshot with values', done => {
+      const entity = getClass();
+      entity.addMany([
+        { id: '1', item: { id: '1', name: 'Name 1' } },
+        { id: '2', item: { id: '2', name: 'Name 2' } },
+        { id: '3', item: { id: '3', name: 'Name 3' } },
+      ]);
+      entity.items$.subscribe(() => {
+        expect(entity.snapshot).toBeDefined();
+        expect(entity.snapshot.activeId).toBeFalsy();
+        expect(Object.keys(entity.snapshot.data).length).toEqual(3);
+        expect(entity.snapshot.items.length).toEqual(3);
+        done();
+      });
     });
   });
 });

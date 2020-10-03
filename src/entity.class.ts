@@ -199,12 +199,8 @@ export class EntityClass<F> {
     this.activeId.next(id);
   }
 
-  getActive(): Observable<F> {
-    return combineLatest([this.data$, this.activeId$]).pipe(
-      map(([data, id]) => {
-        return { ...data[id] };
-      })
-    );
+  getActive(): Observable<F | null> {
+    return combineLatest([this.data$, this.activeId$]).pipe(map(([data, id]) => data[id]));
   }
 
   exists(id: string): boolean {
