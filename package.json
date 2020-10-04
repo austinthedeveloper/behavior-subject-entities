@@ -1,13 +1,17 @@
 {
   "name": "behavior-subject-entities",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A helper class for dealing with BehaviorSubjects",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
-  "keywords": ["angular", "behavior subject", "typescript"],
+  "keywords": [
+    "angular",
+    "behavior subject",
+    "typescript"
+  ],
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
