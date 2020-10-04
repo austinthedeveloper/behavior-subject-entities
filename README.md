@@ -22,11 +22,15 @@ Behavior Subject Entitites is a helper class designed to be used in place of a s
 
 `import { EntityClass } from 'behavior-subject-entities';`
 
+## Demo
+
 - Option 1: Extend it on a Class
+  - [Stackblitz](https://stackblitz.com/edit/behavior-subject-demo-1?file=src/app/app.component.ts)
 
 `export class TestService extends EntityClass<T>`
 
 - Options 2: add it as a variable to a class
+  - [Stackblitz](https://stackblitz.com/edit/behavior-subject-demo-2?file=src/app/app.component.ts)
 
 `subject = new EntityClass<T>();`
 
