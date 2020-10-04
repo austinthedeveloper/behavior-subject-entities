@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "./src",
     "outDir": "./dist",
     "sourceMap": true,
     "declaration": true,
@@ -16,9 +16,8 @@
     "lib": ["es2017", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "types": ["node", "jest"]
+    "baseUrl": "."
   },
-  "exclude": [],
-  "include": ["**/*.ts"]
+  "exclude": ["**/*.spec.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
 }
