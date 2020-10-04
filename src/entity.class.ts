@@ -20,6 +20,12 @@ interface EntityAdd<T> {
   item: T;
 }
 
+interface EntitySnapshot<T> {
+  data: EntityObjContainer<T>;
+  items: string[];
+  activeId: string;
+}
+
 export class EntityClass<T> {
   private data: BehaviorSubject<EntityObjContainer<T>> = new BehaviorSubject<EntityObjContainer<T>>(
     {}
@@ -27,8 +33,8 @@ export class EntityClass<T> {
   private items: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
   private activeId: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-  public data$ = this.data.asObservable();
-  public items$ = combineLatest([this.items.asObservable(), this.data$]).pipe(
+  public data$: Observable<EntityObjContainer<T>> = this.data.asObservable();
+  public items$: Observable<T[]> = combineLatest([this.items.asObservable(), this.data$]).pipe(
     map(([ids, data]) => this.reduceIds(ids, data))
   );
   public activeId$ = this.activeId.asObservable();
@@ -74,10 +80,10 @@ export class EntityClass<T> {
    * Get a snapshot of the stored values
    *
    * @readonly
-   * @type {{ data: EntityObjContainer<T>; items: string[] }}
+   * @type {EntitySnapshot<T>}
    * @memberof EntityClass
    */
-  get snapshot(): { data: EntityObjContainer<T>; items: string[]; activeId: string } {
+  get snapshot(): EntitySnapshot<T> {
     return {
       data: this.data.value,
       items: this.items.value,
