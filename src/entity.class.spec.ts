@@ -1,4 +1,4 @@
-import {EntityClass} from '../src/entity.class';
+import {EntityClass} from './entity.class';
 
 interface MockInterface {
   id: string;

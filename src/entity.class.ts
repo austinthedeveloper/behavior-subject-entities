@@ -1,30 +1,13 @@
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {IdSelector} from './id-selector.class';
-
-interface EntityObjContainerString<T> {
-  [key: string]: T;
-}
-type EntityObjContainer<T> = EntityObjContainerString<T>;
-interface EntityOptions<T> {
-  key?: IdSelector<T>;
-  name?: string;
-  plural?: string;
-}
-interface EntityUpdate<T> {
-  id: string;
-  item: Partial<T>;
-}
-interface EntityAdd<T> {
-  id: string;
-  item: T;
-}
-
-interface EntitySnapshot<T> {
-  data: EntityObjContainer<T>;
-  items: string[];
-  activeId: string;
-}
+import {
+  EntityObjContainer,
+  IdSelector,
+  EntityOptions,
+  EntitySnapshot,
+  EntityAdd,
+  EntityUpdate,
+} from './interfaces';
 
 export class EntityClass<T> {
   private data: BehaviorSubject<EntityObjContainer<T>> = new BehaviorSubject<
