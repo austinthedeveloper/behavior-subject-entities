@@ -1,4 +1,4 @@
-import { EntityClass } from '../src/entity.class';
+import {EntityClass} from '../src/entity.class';
 
 interface MockInterface {
   id: string;
@@ -12,18 +12,22 @@ function getClass(): EntityClass<MockInterface> {
 describe('Entity Class', () => {
   describe('Options', () => {
     it('Default Options', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const entity = new EntityClass<any>();
-      expect(entity.idSelector({ id: '555', name: 'test' })).toEqual('555');
+      expect(entity.idSelector({id: '555', name: 'test'})).toEqual('555');
       expect(entity.entityName).toEqual('Item');
       expect(entity.entityNamePlural).toEqual('Items');
     });
     it('should use a different ID selector', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const selector = (instance: any) => instance._id;
-      const entity = new EntityClass<any>({ key: selector });
-      expect(entity.idSelector({ _id: '555', name: 'test' })).toEqual('555');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const entity = new EntityClass<any>({key: selector});
+      expect(entity.idSelector({_id: '555', name: 'test'})).toEqual('555');
     });
     it('should change the names used', () => {
-      const entity = new EntityClass<any>({ name: 'Test', plural: 'Tests' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const entity = new EntityClass<any>({name: 'Test', plural: 'Tests'});
       expect(entity.entityName).toEqual('Test');
       expect(entity.entityNamePlural).toEqual('Tests');
     });
@@ -32,7 +36,7 @@ describe('Entity Class', () => {
     let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
-      entity.addOne({ id: '1', item: { id: '1', name: 'testing' } });
+      entity.addOne({id: '1', item: {id: '1', name: 'testing'}});
     });
 
     it('should add an item to the items array', done => {
@@ -44,8 +48,8 @@ describe('Entity Class', () => {
 
     it('should add many items to the items array', done => {
       entity.addMany([
-        { id: '2', item: { id: '2', name: 'testing' } },
-        { id: '3', item: { id: '3', name: 'testing' } },
+        {id: '2', item: {id: '2', name: 'testing'}},
+        {id: '3', item: {id: '3', name: 'testing'}},
       ]);
 
       entity.items$.subscribe(items => {
@@ -71,9 +75,9 @@ describe('Entity Class', () => {
     let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
-      entity.addOne({ id: '1', item: { id: '1', name: 'Name 1' } });
-      entity.addOne({ id: '2', item: { id: '2', name: 'Name 2' } });
-      entity.addOne({ id: '3', item: { id: '3', name: 'Name 3' } });
+      entity.addOne({id: '1', item: {id: '1', name: 'Name 1'}});
+      entity.addOne({id: '2', item: {id: '2', name: 'Name 2'}});
+      entity.addOne({id: '3', item: {id: '3', name: 'Name 3'}});
     });
 
     it('should retrieve one item', done => {
@@ -97,14 +101,14 @@ describe('Entity Class', () => {
     beforeEach(() => {
       entity = getClass();
       entity.addMany([
-        { id: '1', item: { id: '1', name: 'Name 1' } },
-        { id: '2', item: { id: '2', name: 'Name 2' } },
-        { id: '3', item: { id: '3', name: 'Name 3' } },
+        {id: '1', item: {id: '1', name: 'Name 1'}},
+        {id: '2', item: {id: '2', name: 'Name 2'}},
+        {id: '3', item: {id: '3', name: 'Name 3'}},
       ]);
     });
 
     it('should update one item', done => {
-      entity.updateOne({ id: '1', item: { id: '1', name: 'Test' } });
+      entity.updateOne({id: '1', item: {id: '1', name: 'Test'}});
       entity.getOne('1').subscribe(item => {
         expect(item.name).toEqual('Test');
         done();
@@ -112,9 +116,9 @@ describe('Entity Class', () => {
     });
     it('should update many items', done => {
       entity.updateMany([
-        { id: '1', item: { id: '1', name: 'Test' } },
-        { id: '2', item: { id: '2', name: 'Test' } },
-        { id: '3', item: { id: '3', name: 'Test' } },
+        {id: '1', item: {id: '1', name: 'Test'}},
+        {id: '2', item: {id: '2', name: 'Test'}},
+        {id: '3', item: {id: '3', name: 'Test'}},
       ]);
       entity.getMany(['1', '2', '3']).subscribe(items => {
         items.forEach(item => {
@@ -129,9 +133,9 @@ describe('Entity Class', () => {
     beforeEach(() => {
       entity = getClass();
       entity.addMany([
-        { id: '1', item: { id: '1', name: 'Name 1' } },
-        { id: '2', item: { id: '2', name: 'Name 2' } },
-        { id: '3', item: { id: '3', name: 'Name 3' } },
+        {id: '1', item: {id: '1', name: 'Name 1'}},
+        {id: '2', item: {id: '2', name: 'Name 2'}},
+        {id: '3', item: {id: '3', name: 'Name 3'}},
       ]);
     });
 
@@ -155,9 +159,9 @@ describe('Entity Class', () => {
     beforeEach(() => {
       entity = getClass();
       entity.addMany([
-        { id: '1', item: { id: '1', name: 'Name 1' } },
-        { id: '2', item: { id: '2', name: 'Name 2' } },
-        { id: '3', item: { id: '3', name: 'Name 3' } },
+        {id: '1', item: {id: '1', name: 'Name 1'}},
+        {id: '2', item: {id: '2', name: 'Name 2'}},
+        {id: '3', item: {id: '3', name: 'Name 3'}},
       ]);
     });
     describe('Init', () => {
@@ -201,9 +205,9 @@ describe('Entity Class', () => {
     beforeEach(() => {
       entity = getClass();
       entity.addMany([
-        { id: '1', item: { id: '1', name: 'Name 1' } },
-        { id: '2', item: { id: '2', name: 'Name 2' } },
-        { id: '3', item: { id: '3', name: 'Name 3' } },
+        {id: '1', item: {id: '1', name: 'Name 1'}},
+        {id: '2', item: {id: '2', name: 'Name 2'}},
+        {id: '3', item: {id: '3', name: 'Name 3'}},
       ]);
     });
     it('should return true when the item exists', () => {
@@ -226,9 +230,9 @@ describe('Entity Class', () => {
     it('should return a snapshot with values', done => {
       const entity = getClass();
       entity.addMany([
-        { id: '1', item: { id: '1', name: 'Name 1' } },
-        { id: '2', item: { id: '2', name: 'Name 2' } },
-        { id: '3', item: { id: '3', name: 'Name 3' } },
+        {id: '1', item: {id: '1', name: 'Name 1'}},
+        {id: '2', item: {id: '2', name: 'Name 2'}},
+        {id: '3', item: {id: '3', name: 'Name 3'}},
       ]);
       entity.items$.subscribe(() => {
         expect(entity.snapshot).toBeDefined();
