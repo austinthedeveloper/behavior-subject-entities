@@ -51,12 +51,12 @@ export class EntityClass<T> {
    * @param {EntityOptions} options
    * @memberof EntityClass
    */
-  private setOptions(options: EntityOptions<T> = {}) {
+  private setOptions(options: EntityOptions<T>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.idSelector = options.key || ((instance: any) => instance.id);
   }
 
-  private setNames(options: EntityOptions<T> = {}) {
+  private setNames(options: EntityOptions<T>) {
     this.entityName = options.name || 'Item';
     this.entityNamePlural = options.plural || `${this.entityName}s`;
   }
@@ -122,14 +122,13 @@ export class EntityClass<T> {
    */
   addMany(arr: EntityAdd<T>[]) {
     const data = this.snapshot.data;
-    let items = this.snapshot.items;
+    const items = this.snapshot.items;
     arr.forEach(({id, item}) => {
       data[id] = item;
-      const existsInArray = items.includes(id);
-      if (!existsInArray) {
-        items = items.filter(v => v !== id);
-        items.push(id);
-      }
+    });
+    const filtered = arr.filter(({id}) => !items.includes(id));
+    filtered.forEach(({id}) => {
+      items.push(id);
     });
 
     this.data.next(data);

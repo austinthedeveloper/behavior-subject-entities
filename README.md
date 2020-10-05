@@ -4,7 +4,8 @@
 
 ![Jest](https://img.shields.io/badge/Jest-21%20of%2021-success.svg)
 ![Build](https://img.shields.io/badge/Build-Passing-success.svg)
-![Lint](https://img.shields.io/badge/Lint-Failing-critical.svg)
+![Coverage](https://img.shields.io/badge/Coverage-100%-success.svg)
+![ESLint](https://img.shields.io/badge/Lint-Passing-success.svg)
 
 ## Description
 
