@@ -1,6 +1,6 @@
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { IdSelector } from './id-selector.class';
+import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {IdSelector} from './id-selector.class';
 
 interface EntityObjContainerString<T> {
   [key: string]: T;
@@ -27,16 +27,17 @@ interface EntitySnapshot<T> {
 }
 
 export class EntityClass<T> {
-  private data: BehaviorSubject<EntityObjContainer<T>> = new BehaviorSubject<EntityObjContainer<T>>(
-    {}
-  );
+  private data: BehaviorSubject<EntityObjContainer<T>> = new BehaviorSubject<
+    EntityObjContainer<T>
+  >({});
   private items: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
   private activeId: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   public data$: Observable<EntityObjContainer<T>> = this.data.asObservable();
-  public items$: Observable<T[]> = combineLatest([this.items.asObservable(), this.data$]).pipe(
-    map(([ids, data]) => this.reduceIds(ids, data))
-  );
+  public items$: Observable<T[]> = combineLatest([
+    this.items.asObservable(),
+    this.data$,
+  ]).pipe(map(([ids, data]) => this.reduceIds(ids, data)));
   public activeId$ = this.activeId.asObservable();
 
   /**
@@ -68,6 +69,7 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   private setOptions(options: EntityOptions<T> = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.idSelector = options.key || ((instance: any) => instance.id);
   }
 
@@ -138,7 +140,7 @@ export class EntityClass<T> {
   addMany(arr: EntityAdd<T>[]) {
     const data = this.snapshot.data;
     let items = this.snapshot.items;
-    arr.forEach(({ id, item }) => {
+    arr.forEach(({id, item}) => {
       data[id] = item;
       const existsInArray = items.includes(id);
       if (!existsInArray) {
@@ -169,8 +171,8 @@ export class EntityClass<T> {
    */
   updateMany(arr: EntityUpdate<T>[]) {
     const data = this.snapshot.data;
-    arr.forEach(({ id, item }) => {
-      data[id] = { ...data[id], ...item };
+    arr.forEach(({id, item}) => {
+      data[id] = {...data[id], ...item};
     });
     this.data.next(data);
   }
@@ -221,7 +223,9 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   getActive(): Observable<T | null> {
-    return combineLatest([this.data$, this.activeId$]).pipe(map(([data, id]) => data[id]));
+    return combineLatest([this.data$, this.activeId$]).pipe(
+      map(([data, id]) => data[id])
+    );
   }
 
   /**
