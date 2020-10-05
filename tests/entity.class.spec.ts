@@ -4,6 +4,10 @@ interface MockInterface {
   id: string;
   name: string;
 }
+interface MockInterfaceAlt {
+  _id: string;
+  name: string;
+}
 
 function getClass(): EntityClass<MockInterface> {
   return new EntityClass<MockInterface>();
@@ -12,22 +16,21 @@ function getClass(): EntityClass<MockInterface> {
 describe('Entity Class', () => {
   describe('Options', () => {
     it('Default Options', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const entity = new EntityClass<any>();
+      const entity = new EntityClass<MockInterface>();
       expect(entity.idSelector({id: '555', name: 'test'})).toEqual('555');
       expect(entity.entityName).toEqual('Item');
       expect(entity.entityNamePlural).toEqual('Items');
     });
     it('should use a different ID selector', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const selector = (instance: any) => instance._id;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const entity = new EntityClass<any>({key: selector});
+      const selector = (instance: MockInterfaceAlt) => instance._id;
+      const entity = new EntityClass<MockInterfaceAlt>({key: selector});
       expect(entity.idSelector({_id: '555', name: 'test'})).toEqual('555');
     });
     it('should change the names used', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const entity = new EntityClass<any>({name: 'Test', plural: 'Tests'});
+      const entity = new EntityClass<MockInterface>({
+        name: 'Test',
+        plural: 'Tests',
+      });
       expect(entity.entityName).toEqual('Test');
       expect(entity.entityNamePlural).toEqual('Tests');
     });
@@ -100,11 +103,7 @@ describe('Entity Class', () => {
     let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
-      entity.addMany([
-        {id: '1', item: {id: '1', name: 'Name 1'}},
-        {id: '2', item: {id: '2', name: 'Name 2'}},
-        {id: '3', item: {id: '3', name: 'Name 3'}},
-      ]);
+      addMany(entity);
     });
 
     it('should update one item', done => {
@@ -132,11 +131,7 @@ describe('Entity Class', () => {
     let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
-      entity.addMany([
-        {id: '1', item: {id: '1', name: 'Name 1'}},
-        {id: '2', item: {id: '2', name: 'Name 2'}},
-        {id: '3', item: {id: '3', name: 'Name 3'}},
-      ]);
+      addMany(entity);
     });
 
     it('should remove one item', done => {
@@ -158,11 +153,7 @@ describe('Entity Class', () => {
     let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
-      entity.addMany([
-        {id: '1', item: {id: '1', name: 'Name 1'}},
-        {id: '2', item: {id: '2', name: 'Name 2'}},
-        {id: '3', item: {id: '3', name: 'Name 3'}},
-      ]);
+      addMany(entity);
     });
     describe('Init', () => {
       it('should not start with an active id', done => {
@@ -204,11 +195,7 @@ describe('Entity Class', () => {
     let entity: EntityClass<MockInterface>;
     beforeEach(() => {
       entity = getClass();
-      entity.addMany([
-        {id: '1', item: {id: '1', name: 'Name 1'}},
-        {id: '2', item: {id: '2', name: 'Name 2'}},
-        {id: '3', item: {id: '3', name: 'Name 3'}},
-      ]);
+      addMany(entity);
     });
     it('should return true when the item exists', () => {
       expect(entity.exists('1')).toBeTruthy();
@@ -229,11 +216,7 @@ describe('Entity Class', () => {
     });
     it('should return a snapshot with values', done => {
       const entity = getClass();
-      entity.addMany([
-        {id: '1', item: {id: '1', name: 'Name 1'}},
-        {id: '2', item: {id: '2', name: 'Name 2'}},
-        {id: '3', item: {id: '3', name: 'Name 3'}},
-      ]);
+      addMany(entity);
       entity.items$.subscribe(() => {
         expect(entity.snapshot).toBeDefined();
         expect(entity.snapshot.activeId).toBeFalsy();
@@ -244,3 +227,12 @@ describe('Entity Class', () => {
     });
   });
 });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function addMany(entity: EntityClass<any>) {
+  entity.addMany([
+    {id: '1', item: {id: '1', name: 'Name 1'}},
+    {id: '2', item: {id: '2', name: 'Name 2'}},
+    {id: '3', item: {id: '3', name: 'Name 3'}},
+  ]);
+}

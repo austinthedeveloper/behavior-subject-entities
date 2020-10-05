@@ -5,5 +5,9 @@
     "jest": true,
     "node": true
   },
-  "extends": "./node_modules/gts/"
+  "extends": "./node_modules/gts/",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "ignorePatterns": ["dist"]
 }
