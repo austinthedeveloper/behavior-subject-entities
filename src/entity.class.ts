@@ -187,6 +187,16 @@ export class EntityClass<T> {
   }
 
   /**
+   * Reset the items
+   *
+   * @memberof EntityClass
+   */
+  removeAll() {
+    this.data.next({});
+    this.items.next([]);
+  }
+
+  /**
    * Set an Active Entry in the service.
    * Useful alternative to getOne()
    *

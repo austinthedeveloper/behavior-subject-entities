@@ -148,6 +148,13 @@ describe('Entity Class', () => {
         done();
       });
     });
+    it('should remove all items', done => {
+      entity.removeAll();
+      entity.items$.subscribe(items => {
+        expect(items.length).toEqual(0);
+        done();
+      });
+    });
   });
   describe('Active Item', () => {
     let entity: EntityClass<MockInterface>;
