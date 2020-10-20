@@ -109,7 +109,7 @@ describe('Entity Class', () => {
     });
 
     it('should update one item', done => {
-      entity.updateOne({id: '1', item: {id: '1', name: 'Test'}});
+      entity.updateOne({id: '1', name: 'Test'});
       entity.getOne('1').subscribe(item => {
         expect(item.name).toEqual('Test');
         done();
@@ -117,9 +117,9 @@ describe('Entity Class', () => {
     });
     it('should update many items', done => {
       entity.updateMany([
-        {id: '1', item: {id: '1', name: 'Test'}},
-        {id: '2', item: {id: '2', name: 'Test'}},
-        {id: '3', item: {id: '3', name: 'Test'}},
+        {id: '1', name: 'Test'},
+        {id: '2', name: 'Test'},
+        {id: '3', name: 'Test'},
       ]);
       entity.getMany(['1', '2', '3']).subscribe(items => {
         items.forEach(item => {

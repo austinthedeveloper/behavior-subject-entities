@@ -9,14 +9,6 @@ export interface EntityOptions<T> {
   name?: string;
   plural?: string;
 }
-export interface EntityUpdate<T> {
-  id: string;
-  item: Partial<T>;
-}
-export interface EntityAdd<T> {
-  id: string;
-  item: T;
-}
 
 export interface EntitySnapshot<T> {
   data: EntityObjContainer<T>;

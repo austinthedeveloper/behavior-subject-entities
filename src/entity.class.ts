@@ -5,8 +5,6 @@ import {
   IdSelector,
   EntityOptions,
   EntitySnapshot,
-  EntityAdd,
-  EntityUpdate,
 } from './interfaces';
 
 export class EntityClass<T> {
@@ -138,7 +136,7 @@ export class EntityClass<T> {
    * @param {Partial<T>} item
    * @memberof EntityClass
    */
-  updateOne(item: EntityUpdate<T>) {
+  updateOne(item: T) {
     this.updateMany([item]);
   }
 
@@ -148,9 +146,10 @@ export class EntityClass<T> {
    * @param {Partial<T>[]} arr
    * @memberof EntityClass
    */
-  updateMany(arr: EntityUpdate<T>[]) {
+  updateMany(arr: T[]) {
     const data = this.snapshot.data;
-    arr.forEach(({id, item}) => {
+    arr.forEach(item => {
+      const id = this.idSelector(item);
       data[id] = {...data[id], ...item};
     });
     this.data.next(data);
