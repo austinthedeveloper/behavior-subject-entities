@@ -84,10 +84,7 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   getOne(id: string): Observable<T> {
-    return this.data$.pipe(
-      map(data => data[id])
-      // map(data => (data ? { ...data } : undefined))
-    );
+    return this.data$.pipe(map(data => data[id]));
   }
   /**
    * Returns multiple Entries as an Observable
@@ -110,7 +107,7 @@ export class EntityClass<T> {
    * @param {T} item
    * @memberof EntityClass
    */
-  addOne(item: EntityAdd<T>) {
+  addOne(item: T) {
     this.addMany([item]);
   }
 
@@ -120,15 +117,15 @@ export class EntityClass<T> {
    * @param {T[]} arr
    * @memberof EntityClass
    */
-  addMany(arr: EntityAdd<T>[]) {
+  addMany(arr: T[]) {
     const data = this.snapshot.data;
     const items = this.snapshot.items;
-    arr.forEach(({id, item}) => {
+    arr.forEach(item => {
+      const id = this.idSelector(item);
       data[id] = item;
-    });
-    const filtered = arr.filter(({id}) => !items.includes(id));
-    filtered.forEach(({id}) => {
-      items.push(id);
+      if (!items.includes(id)) {
+        items.push(id);
+      }
     });
 
     this.data.next(data);
