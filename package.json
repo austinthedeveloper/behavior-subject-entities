@@ -1,6 +1,6 @@
 {
   "name": "behavior-subject-entities",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A helper class for dealing with BehaviorSubjects",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
