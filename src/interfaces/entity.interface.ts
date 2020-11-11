@@ -13,5 +13,6 @@ export interface EntityOptions<T> {
 export interface EntitySnapshot<T> {
   data: EntityObjContainer<T>;
   items: string[];
+  populated: T[];
   activeId: string;
 }

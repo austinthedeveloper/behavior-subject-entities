@@ -70,6 +70,7 @@ export class EntityClass<T> {
     return {
       data: this.data.value,
       items: this.items.value,
+      populated: this.reduceIds(this.items.value, this.data.value),
       activeId: this.activeId.value,
     };
   }
@@ -126,8 +127,8 @@ export class EntityClass<T> {
       }
     });
 
-    this.data.next(data);
     this.items.next(items);
+    this.data.next(data);
   }
 
   /**
@@ -178,8 +179,8 @@ export class EntityClass<T> {
       delete data[id];
       items = items.filter(v => v !== id);
     });
-    this.data.next(data);
     this.items.next(items);
+    this.data.next(data);
   }
 
   /**
@@ -188,8 +189,8 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   removeAll() {
-    this.data.next({});
     this.items.next([]);
+    this.data.next({});
   }
 
   /**
