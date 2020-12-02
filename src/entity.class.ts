@@ -5,6 +5,7 @@ import {
   IdSelector,
   EntityOptions,
   EntitySnapshot,
+  EntityCallback,
 } from './interfaces';
 
 export class EntityClass<T> {
@@ -36,6 +37,7 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   public idSelector!: IdSelector<T>;
+  private callback!: EntityCallback<T>;
 
   constructor(options: EntityOptions<T> = {}) {
     this.setOptions(options);
@@ -52,6 +54,7 @@ export class EntityClass<T> {
   private setOptions(options: EntityOptions<T>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.idSelector = options.key || ((instance: any) => instance.id);
+    this.callback = options.callback || (snapshot => {});
   }
 
   private setNames(options: EntityOptions<T>) {
@@ -129,6 +132,7 @@ export class EntityClass<T> {
 
     this.items.next(items);
     this.data.next(data);
+    this.runCallback();
   }
 
   /**
@@ -154,6 +158,7 @@ export class EntityClass<T> {
       data[id] = {...data[id], ...item};
     });
     this.data.next(data);
+    this.runCallback();
   }
 
   /**
@@ -181,6 +186,7 @@ export class EntityClass<T> {
     });
     this.items.next(items);
     this.data.next(data);
+    this.runCallback();
   }
 
   /**
@@ -227,5 +233,16 @@ export class EntityClass<T> {
    */
   exists(id: string): boolean {
     return this.snapshot.items.includes(id);
+  }
+
+  /**
+   * Run the callback function every time data has been changed
+   * Add/Remove/Update
+   * All Get calls do not call the callback
+   *
+   * @memberof EntityClass
+   */
+  runCallback() {
+    this.callback(this.snapshot);
   }
 }

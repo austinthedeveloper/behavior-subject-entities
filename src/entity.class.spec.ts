@@ -235,6 +235,30 @@ describe('Entity Class', () => {
       });
     });
   });
+  describe('Callback functions', () => {
+    it('should use the default callback function', () => {
+      const result = 0;
+      const entity = new EntityClass<MockInterface>();
+      entity.addMany([
+        {id: '2', name: 'testing'},
+        {id: '3', name: 'testing'},
+      ]);
+      expect(result).toEqual(0);
+    });
+    it('should add a callback function', () => {
+      let result = 0;
+      const entity = new EntityClass<MockInterface>({
+        callback: snapshot => {
+          result = result + 1;
+        },
+      });
+      entity.addMany([
+        {id: '2', name: 'testing'},
+        {id: '3', name: 'testing'},
+      ]);
+      expect(result).toEqual(1);
+    });
+  });
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
