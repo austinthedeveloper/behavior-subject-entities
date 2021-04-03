@@ -5,8 +5,7 @@ import {
   IdSelector,
   EntityOptions,
   EntitySnapshot,
-  EntityAdd,
-  EntityUpdate,
+  EntityCallback,
 } from './interfaces';
 
 export class EntityClass<T> {
@@ -38,6 +37,7 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   public idSelector!: IdSelector<T>;
+  private callback!: EntityCallback<T>;
 
   constructor(options: EntityOptions<T> = {}) {
     this.setOptions(options);
@@ -54,6 +54,7 @@ export class EntityClass<T> {
   private setOptions(options: EntityOptions<T>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.idSelector = options.key || ((instance: any) => instance.id);
+    this.callback = options.callback || (snapshot => {});
   }
 
   private setNames(options: EntityOptions<T>) {
@@ -72,6 +73,7 @@ export class EntityClass<T> {
     return {
       data: this.data.value,
       items: this.items.value,
+      populated: this.reduceIds(this.items.value, this.data.value),
       activeId: this.activeId.value,
     };
   }
@@ -84,10 +86,7 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   getOne(id: string): Observable<T> {
-    return this.data$.pipe(
-      map(data => data[id])
-      // map(data => (data ? { ...data } : undefined))
-    );
+    return this.data$.pipe(map(data => data[id]));
   }
   /**
    * Returns multiple Entries as an Observable
@@ -110,7 +109,7 @@ export class EntityClass<T> {
    * @param {T} item
    * @memberof EntityClass
    */
-  addOne(item: EntityAdd<T>) {
+  addOne(item: T) {
     this.addMany([item]);
   }
 
@@ -120,19 +119,20 @@ export class EntityClass<T> {
    * @param {T[]} arr
    * @memberof EntityClass
    */
-  addMany(arr: EntityAdd<T>[]) {
+  addMany(arr: T[]) {
     const data = this.snapshot.data;
     const items = this.snapshot.items;
-    arr.forEach(({id, item}) => {
+    arr.forEach(item => {
+      const id = this.idSelector(item);
       data[id] = item;
-    });
-    const filtered = arr.filter(({id}) => !items.includes(id));
-    filtered.forEach(({id}) => {
-      items.push(id);
+      if (!items.includes(id)) {
+        items.push(id);
+      }
     });
 
-    this.data.next(data);
     this.items.next(items);
+    this.data.next(data);
+    this.runCallback();
   }
 
   /**
@@ -141,7 +141,7 @@ export class EntityClass<T> {
    * @param {Partial<T>} item
    * @memberof EntityClass
    */
-  updateOne(item: EntityUpdate<T>) {
+  updateOne(item: T) {
     this.updateMany([item]);
   }
 
@@ -151,12 +151,14 @@ export class EntityClass<T> {
    * @param {Partial<T>[]} arr
    * @memberof EntityClass
    */
-  updateMany(arr: EntityUpdate<T>[]) {
+  updateMany(arr: T[]) {
     const data = this.snapshot.data;
-    arr.forEach(({id, item}) => {
+    arr.forEach(item => {
+      const id = this.idSelector(item);
       data[id] = {...data[id], ...item};
     });
     this.data.next(data);
+    this.runCallback();
   }
 
   /**
@@ -182,8 +184,9 @@ export class EntityClass<T> {
       delete data[id];
       items = items.filter(v => v !== id);
     });
-    this.data.next(data);
     this.items.next(items);
+    this.data.next(data);
+    this.runCallback();
   }
 
   /**
@@ -192,8 +195,8 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   removeAll() {
-    this.data.next({});
     this.items.next([]);
+    this.data.next({});
   }
 
   /**
@@ -230,5 +233,16 @@ export class EntityClass<T> {
    */
   exists(id: string): boolean {
     return this.snapshot.items.includes(id);
+  }
+
+  /**
+   * Run the callback function every time data has been changed
+   * Add/Remove/Update
+   * All Get calls do not call the callback
+   *
+   * @memberof EntityClass
+   */
+  runCallback() {
+    this.callback(this.snapshot);
   }
 }

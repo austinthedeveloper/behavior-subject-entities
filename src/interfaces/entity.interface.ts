@@ -1,3 +1,4 @@
+import {EntityCallback} from './callback.interface';
 import {IdSelector} from './id-selector.interface';
 
 export interface EntityObjContainerString<T> {
@@ -6,20 +7,7 @@ export interface EntityObjContainerString<T> {
 export type EntityObjContainer<T> = EntityObjContainerString<T>;
 export interface EntityOptions<T> {
   key?: IdSelector<T>;
+  callback?: EntityCallback<T>;
   name?: string;
   plural?: string;
-}
-export interface EntityUpdate<T> {
-  id: string;
-  item: Partial<T>;
-}
-export interface EntityAdd<T> {
-  id: string;
-  item: T;
-}
-
-export interface EntitySnapshot<T> {
-  data: EntityObjContainer<T>;
-  items: string[];
-  activeId: string;
 }

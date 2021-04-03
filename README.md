@@ -49,16 +49,16 @@ Behavior Subject Entitites is a helper class designed to be used in place of a s
 
 | Method      | Parameters            | Return                            |
 | ----------- | --------------------- | --------------------------------- |
-| data\$      | N/A                   | Observable<EntityObjContainer<T>> |
-| items\$     | N/A                   | Observable<T[]>                   |
-| activeId\$  | N/A                   | Observable<string>                |
-| addOne      | item: EntityAdd<T>    | void                              |
-| addMany     | arr: EntityAdd<T>[]   | void                              |
-| getOne      | id: string            | Observable<T>                     |
-| getMany     | ids: string[]         | Observable<T[]>                   |
-| updateOne   | item: EntityUpdate<T> | void                              |
-| updateMany  | arr: EntityUpdate[]   | void                              |
+| data\$      | N/A                   | Observable`<EntityObjContainer<T>>` |
+| items\$     | N/A                   | Observable`<T[]> `                  |
+| activeId\$  | N/A                   | Observable`<string>`                |
+| addOne      | item: T | void                              |
+| addMany     | arr: T[]   | void                              |
+| getOne      | id: string            | Observable`<T>`                     |
+| getMany     | ids: string[]         | Observable`<T[]>`                   |
+| updateOne   | item: T | void                              |
+| updateMany  | arr: T | void                              |
 | removeOne   | id: string            | void                              |
 | removeMany  | ids: string[]         | void                              |
-| snapshot    | N/A                   | EntitySnapshot<T>                 |
+| snapshot    | N/A                   | EntitySnapshot`<T>`                |
 | setActiveId | id: string            | void                              |
