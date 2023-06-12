@@ -9,17 +9,22 @@ import {
 } from './interfaces';
 
 export class EntityClass<T> {
-  private data: BehaviorSubject<EntityObjContainer<T>> = new BehaviorSubject<
-    EntityObjContainer<T>
-  >({});
-  private items: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
+  private _store: BehaviorSubject<{
+    data: EntityObjContainer<T>;
+    items: string[];
+  }> = new BehaviorSubject({
+    data: {},
+    items: [] as string[],
+  });
+
   private activeId: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-  public data$: Observable<EntityObjContainer<T>> = this.data.asObservable();
-  public items$: Observable<T[]> = combineLatest([
-    this.items.asObservable(),
-    this.data$,
-  ]).pipe(map(([ids, data]) => this.reduceIds(ids, data)));
+  public data$: Observable<
+    EntityObjContainer<T>
+  > = this._store.asObservable().pipe(map(store => store.data));
+  public items$: Observable<T[]> = this._store
+    .asObservable()
+    .pipe(map(({data, items}) => this.reduceIds(items, data)));
   public activeId$ = this.activeId.asObservable();
 
   /**
@@ -71,9 +76,9 @@ export class EntityClass<T> {
    */
   get snapshot(): EntitySnapshot<T> {
     return {
-      data: this.data.value,
-      items: this.items.value,
-      populated: this.reduceIds(this.items.value, this.data.value),
+      data: this.data,
+      items: this.items,
+      populated: this.reduceIds(this.items, this.data),
       activeId: this.activeId.value,
     };
   }
@@ -130,8 +135,7 @@ export class EntityClass<T> {
       }
     });
 
-    this.items.next(items);
-    this.data.next(data);
+    this.updateStore(data, items);
     this.runCallback();
   }
 
@@ -157,7 +161,7 @@ export class EntityClass<T> {
       const id = this.idSelector(item);
       data[id] = {...data[id], ...item};
     });
-    this.data.next(data);
+    this.updateStore(data);
     this.runCallback();
   }
 
@@ -184,8 +188,7 @@ export class EntityClass<T> {
       delete data[id];
       items = items.filter(v => v !== id);
     });
-    this.items.next(items);
-    this.data.next(data);
+    this.updateStore(data, items);
     this.runCallback();
   }
 
@@ -195,8 +198,7 @@ export class EntityClass<T> {
    * @memberof EntityClass
    */
   removeAll() {
-    this.items.next([]);
-    this.data.next({});
+    this.updateStore({} as EntityObjContainer<T>, [] as string[]);
   }
 
   /**
@@ -244,5 +246,19 @@ export class EntityClass<T> {
    */
   runCallback() {
     this.callback(this.snapshot);
+  }
+
+  private updateStore(data?: EntityObjContainer<T>, items?: string[]) {
+    this._store.next({
+      data: data || this._store.value.data,
+      items: items || this._store.value.items,
+    });
+  }
+
+  get data() {
+    return this._store.value.data;
+  }
+  get items() {
+    return this._store.value.items;
   }
 }
